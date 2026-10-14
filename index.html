@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://i.ytimg.com; frame-src https://www.youtube-nocookie.com; connect-src 'self' https://api.github.com; base-uri 'none'; form-action 'none'">
+<title>Lift Library</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Layout: muscle group rail, programming panel, video grid, collapsible add form. */
+:root{
+  --bg:#eceeea;--surface:#fafaf8;--ink:#17201b;--muted:#5f6b64;--line:#d6dad4;
+  --accent:#d8431a;--accent-ink:#ffffff;--tile:#1c2420;--ok:#2f7d4f;--bad:#b3261e;
+  --display:"Barlow Condensed","Arial Narrow",Impact,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#121714;--surface:#1b221e;--ink:#eef1ec;--muted:#98a49c;--line:#2d3731;
+  --accent:#ff6a3d;--accent-ink:#17201b;--tile:#0b0f0d;--ok:#58c07f;--bad:#ff7a70;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45;padding-inline:16px}
+main{max-width:1000px;margin-inline:auto;padding-block:24px 56px;display:flex;flex-direction:column;gap:20px}
+h1,h2,h3{font-family:var(--display);text-transform:uppercase;letter-spacing:.03em;margin:0;line-height:1.05;text-wrap:balance}
+h1{font-size:clamp(2.4rem,7vw,3.6rem)}
+h2{font-size:1.5rem}
+.sub{color:var(--muted);margin:6px 0 0;max-width:60ch}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.banner{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--bad);padding:10px 14px;border-radius:6px;font-size:.9rem}
+.rail{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
+.tab{flex:none;border:1px solid var(--line);background:var(--surface);padding:9px 16px;border-radius:6px;cursor:pointer;font-family:var(--display);font-size:1.15rem;text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+.tab em{font-style:normal;color:var(--muted);margin-left:6px;font-size:.95rem}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tab[aria-selected="true"] em{color:var(--bg);opacity:.7}
+.plan{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:14px}
+.plan-head{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center}
+.seg{display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{border:0;background:transparent;padding:7px 14px;cursor:pointer;font-weight:600;font-size:.9rem}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-block:1px solid var(--line)}
+.stat{padding:12px 10px;border-right:1px solid var(--line);min-width:0}
+.stat:last-child{border-right:0}
+.stat b{display:block;font-family:var(--display);font-size:1.7rem;line-height:1;font-variant-numeric:tabular-nums}
+.stat span{font-size:.72rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+.plan p{margin:0;color:var(--muted);font-size:.95rem}
+@media(max-width:520px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.stat:nth-child(2){border-right:0}.stat:nth-child(-n+2){border-bottom:1px solid var(--line)}}
+.bar{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center}
+.tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+label.sort{display:flex;gap:8px;align-items:center;font-size:.85rem;color:var(--muted)}
+select{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 10px}
+.btn{border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);border-radius:6px;padding:9px 16px;font-weight:600;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn[disabled]{opacity:.55;cursor:default}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,290px),1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.tile{position:relative;background:var(--tile);aspect-ratio:16/9;max-width:100%;width:100%;border:0;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;text-decoration:none;overflow:hidden}
+.tile.short{aspect-ratio:9/16;max-height:480px;margin-inline:auto;width:auto;max-width:100%}
+.tile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.tile iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.tile svg{width:56px;height:56px;position:relative;transition:transform .15s}
+.tile svg circle{fill:var(--accent)}.tile svg path{fill:#fff}
+.tile:hover svg{transform:scale(1.08)}
+.tile small{position:absolute;left:12px;bottom:10px;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:rgba(0,0,0,.55);padding:2px 6px;border-radius:3px}
+@media(prefers-reduced-motion:reduce){.tile svg{transition:none}}
+.cbody{padding:14px;display:flex;flex-direction:column;gap:10px;flex:1}
+.ctitle{font-size:1.35rem;overflow-wrap:anywhere}
+.meta{color:var(--muted);font-size:.82rem;font-variant-numeric:tabular-nums}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);border-radius:4px;padding:2px 8px;font-size:.82rem;font-variant-numeric:tabular-nums}
+.chip b{font-weight:600}
+.note{font-size:.9rem;color:var(--muted);margin:0;overflow-wrap:anywhere}
+.cfoot{display:flex;justify-content:space-between;align-items:center;margin-top:auto;padding-top:4px}
+.cfoot a{color:var(--accent);font-weight:600;text-decoration:none}
+.cfoot a:hover{text-decoration:underline}
+.link{background:none;border:0;color:var(--muted);cursor:pointer;font-size:.85rem;padding:4px 0}
+.link.danger{color:var(--bad)}
+.empty{grid-column:1/-1;border:1px dashed var(--line);border-radius:10px;padding:36px 16px;text-align:center;color:var(--muted)}
+.form{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:20px;flex-direction:column;gap:14px;width:min(720px,calc(100% - 32px));max-height:90vh;overflow:auto;margin:auto}
+.form[open]{display:flex}
+.form::backdrop{background:rgba(0,0,0,.55)}
+.fab{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:5;border:0;background:var(--accent);color:var(--accent-ink);font-family:var(--display);text-transform:uppercase;letter-spacing:.05em;font-size:1.2rem;font-weight:700;padding:14px 22px;border-radius:999px;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.3)}
+main{padding-bottom:110px}
+.tile iframe{background:#000}
+.fields{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
+.f{display:flex;flex-direction:column;gap:5px;min-width:0}
+.f label{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.f input,.f select,.f textarea{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px}
+.f textarea{resize:vertical;min-height:70px}
+.s2{grid-column:span 2}.s4{grid-column:span 4}.s6{grid-column:span 6}
+@media(max-width:640px){.fields{grid-template-columns:repeat(2,minmax(0,1fr))}.s2{grid-column:span 1}.s4,.s6{grid-column:span 2}}
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.status{font-size:.9rem;min-height:1.3em}
+.status.ok{color:var(--ok)}.status.bad{color:var(--bad)}
+.sect{border-top:1px solid var(--line);padding-top:14px;display:flex;flex-direction:column;gap:8px}
+.sect p{margin:0;color:var(--muted);font-size:.88rem}
+.sect input[type=password],.sect input[type=text]{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:9px;min-width:0;flex:1 1 220px}
+code{background:var(--bg);padding:1px 6px;border-radius:4px;font-size:.85em}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Lift Library</h1>
+    <p class="sub">Video tutorials by muscle group, with sets, reps and load guidance for each. Pick a group, watch, then lift.</p>
+  </header>
+  <div class="banner" id="loadErr" hidden></div>
+
+  <nav class="rail" id="rail" role="tablist" aria-label="Muscle groups"></nav>
+
+  <section class="plan" aria-labelledby="plan-h">
+    <div class="plan-head">
+      <h2 id="plan-h">Programming</h2>
+      <div class="seg" role="group" aria-label="Experience level" id="levels"></div>
+    </div>
+    <div class="stats" id="stats"></div>
+    <p id="plan-note"></p>
+  </section>
+
+  <section class="bar">
+    <h2 id="list-h">Videos</h2>
+    <div class="tools">
+      <label class="sort" for="sort">Sort by
+        <select id="sort"><option value="new">Newest first</option><option value="old">Oldest first</option></select>
+      </label>
+    </div>
+  </section>
+
+  <button class="fab" id="toggleForm" type="button" aria-haspopup="dialog" aria-controls="formWrap">+ Add a video</button>
+
+  <dialog class="form" id="formWrap" aria-labelledby="form-h">
+    <h2 id="form-h">New video recommendation</h2>
+    <form id="vform" class="fields" autocomplete="off" novalidate>
+      <div class="f s2"><label for="f-cat">Muscle group</label><select id="f-cat"></select></div>
+      <div class="f s4"><label for="f-title">Title</label><input id="f-title" type="text" maxlength="120" placeholder="Barbell curl form check" required></div>
+      <div class="f s4"><label for="f-url">Video link</label><input id="f-url" type="url" inputmode="url" placeholder="https://www.youtube.com/watch?v=..." required></div>
+      <div class="f s2"><label for="f-date">Date</label><input id="f-date" type="date"></div>
+      <div class="f s2"><label for="f-sets">Sets</label><input id="f-sets" type="text" inputmode="numeric" maxlength="8" placeholder="3"></div>
+      <div class="f s2"><label for="f-reps">Reps</label><input id="f-reps" type="text" maxlength="12" placeholder="8-12"></div>
+      <div class="f s2"><label for="f-weight">Suggested weight</label><input id="f-weight" type="text" maxlength="30" placeholder="25 lb, or 60% 1RM"></div>
+      <div class="f s6"><label for="f-notes">Notes</label><textarea id="f-notes" maxlength="400" placeholder="Cues, tempo, what to watch for"></textarea></div>
+      <div class="actions s6">
+        <button class="btn" type="submit" id="submitBtn">Save video</button>
+        <button class="btn ghost" type="button" id="cancelBtn">Close</button>
+        <span class="status" id="formStatus" role="status"></span>
+      </div>
+    </form>
+
+    <div class="sect">
+      <h3>Publishing</h3>
+      <p id="tokenInfo"></p>
+      <div class="actions">
+        <input id="token" type="password" autocomplete="off" placeholder="GitHub fine-grained token" aria-label="GitHub token">
+        <button class="btn ghost" type="button" id="tokenSave">Save token</button>
+        <button class="btn ghost" type="button" id="tokenClear">Remove token</button>
+      </div>
+      <p>Create a fine-grained token for the <code>workout-videos</code> repo only, with Contents set to Read and write. It is stored in this browser only.</p>
+    </div>
+
+    <div class="sect">
+      <h3>Pending on this device</h3>
+      <p id="pendingInfo"></p>
+      <div class="actions">
+        <button class="btn ghost" type="button" id="copyPending">Copy pending rows as CSV</button>
+        <button class="btn ghost" type="button" id="clearPending">Clear pending</button>
+        <span class="status" id="pendStatus" role="status"></span>
+      </div>
+    </div>
+  </dialog>
+
+  <section class="grid" id="grid" aria-live="polite"></section>
+</main>
+
+<script>
+(function(){
+"use strict";
+var REPO={owner:"Jgrosskurth",name:"workout-videos",branch:"main",path:"videos.csv"};
+var COLS=["category","title","url","date","sets","reps","weight","notes"];
+var DEFAULT_CATS=["Biceps","Triceps","Shoulders","Chest","Back","Legs","Core"];
+var LEVELS=["Beginner","Intermediate","Advanced"];
+/* [sets, reps, rest, load] per level. General fitness guidance, not medical advice. */
+var PLAN={
+ Biceps:{L:[["2-3","10-12","60s","RPE 6-7"],["3-4","8-12","60-90s","70-75% 1RM"],["4-5","6-10","90s","75-85% 1RM"]],n:"Keep elbows pinned and lower for a slow 2-3 count. Train 2 times per week with at least 48 hours between sessions."},
+ Triceps:{L:[["2-3","10-12","60s","RPE 6-7"],["3-4","8-12","60-90s","70-75% 1RM"],["4-5","6-10","90s","75-85% 1RM"]],n:"Pair pressing days with an isolation move such as pushdowns or overhead extensions. Lock out fully on each rep."},
+ Shoulders:{L:[["2-3","10-12","60-90s","RPE 6-7"],["3-4","8-12","90s","70-75% 1RM"],["4-5","5-10","90-120s","75-85% 1RM"]],n:"Warm up the rotator cuff first. Use lighter loads on lateral raises and rear delt work, and heavier on presses."},
+ Chest:{L:[["3","8-12","90s","RPE 6-7"],["3-4","6-10","2 min","70-80% 1RM"],["4-5","4-8","2-3 min","80-90% 1RM"]],n:"Use a spotter or safeties on barbell presses. Retract your shoulder blades and keep your feet planted."},
+ Back:{L:[["3","8-12","90s","RPE 6-7"],["3-4","6-10","2 min","70-80% 1RM"],["4-5","4-8","2-3 min","80-90% 1RM"]],n:"Brace your core and keep a neutral spine on rows and deadlifts. Lead with the elbows, not the hands."},
+ Legs:{L:[["3","8-12","2 min","RPE 6-7"],["3-5","5-10","2-3 min","70-80% 1RM"],["4-6","3-8","3-4 min","80-90% 1RM"]],n:"Hit depth with control. Add 5 to 10 lb when you complete every set at the top of the rep range with good form."},
+ Core:{L:[["2-3","10-15","45-60s","Bodyweight"],["3-4","10-20","60s","Bodyweight or light"],["4","8-15","60-90s","Weighted"]],n:"Brace, do not just crunch. Mix anti-extension (planks), rotation and loaded carries. Train 2 to 4 times per week."}
+};
+var GENERIC={L:[["2-3","8-12","60-90s","RPE 6-7"],["3-4","6-12","90s","70-80% 1RM"],["4-5","4-10","2 min","75-85% 1RM"]],n:"General guidance. Adjust to your own recovery and technique."};
+var PLAY='<svg viewBox="0 0 56 56" aria-hidden="true"><circle cx="28" cy="28" r="28"/><path d="M22 17l19 11-19 11z"/></svg>';
+
+var state={cat:null,level:1,sort:"new",remote:[],pending:[],armed:null};
+function $(id){return document.getElementById(id)}
+function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
+function norm(s){return String(s||"").trim().toLowerCase()}
+function titleCase(s){return String(s).trim().replace(/\s+/g," ").replace(/\w\S*/g,function(w){return w.charAt(0).toUpperCase()+w.slice(1).toLowerCase()})}
+function safeUrl(u){try{var x=new URL(String(u).trim());return(x.protocol==="https:"||x.protocol==="http:")?x.href:null}catch(e){return null}}
+function today(){var d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function toISODate(s){s=String(s||"").trim();if(!s)return"";if(/^\d{4}-\d{2}-\d{2}$/.test(s))return s;var t=Date.parse(s);if(isNaN(t))return"";var d=new Date(t);return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function fmtDate(s){if(!s)return"No date";var p=s.split("-");return new Date(+p[0],+p[1]-1,+p[2]).toLocaleDateString(undefined,{year:"numeric",month:"short",day:"numeric"})}
+function store(k,v){try{if(v===undefined)return localStorage.getItem(k);if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v)}catch(e){}return null}
+function ytInfo(u){
+  try{var x=new URL(u),h=x.hostname.replace(/^www\.|^m\./,""),id=null,short=false;
+    if(h==="youtu.be")id=x.pathname.slice(1).split("/")[0];
+    else if(h==="youtube.com"||h==="music.youtube.com"){
+      if(x.pathname==="/watch")id=x.searchParams.get("v");
+      else{var m=x.pathname.match(/^\/(shorts|embed|live)\/([\w-]{11})/);if(m){id=m[2];short=m[1]==="shorts"}}
+    }
+    return id&&/^[\w-]{11}$/.test(id)?{id:id,short:short}:null}catch(e){return null}
+}
+
+/* csv */
+function parseCSV(t){
+  var rows=[],r=[],f="",q=false;t=t.replace(/^﻿/,"");
+  for(var i=0;i<t.length;i++){var c=t[i];
+    if(q){if(c==='"'){if(t[i+1]==='"'){f+='"';i++}else q=false}else f+=c}
+    else if(c==='"')q=true;
+    else if(c===","){r.push(f);f=""}
+    else if(c==="\n"||c==="\r"){if(c==="\r"&&t[i+1]==="\n")i++;r.push(f);f="";if(r.some(function(x){return x.trim()}))rows.push(r);r=[]}
+    else f+=c;
+  }
+  r.push(f);if(r.some(function(x){return x.trim()}))rows.push(r);return rows;
+}
+function cell(s){s=String(s==null?"":s);if(/^[=+\-@\t\r]/.test(s))s="'"+s;return /[",\n\r]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}
+function rowCSV(v){return COLS.map(function(c){return cell(v[c])}).join(",")}
+var ALIAS={category:["category","muscle","muscle group","group","body part"],title:["title","name","video","video title","exercise"],url:["url","link","video link","video url"],date:["date","added","date added","created"],sets:["sets"],reps:["reps","repetitions"],weight:["weight","suggested weight","load"],notes:["notes","note","description","cues"]};
+function toVideos(text){
+  var rows=parseCSV(text);if(rows.length<2)return[];
+  var h=rows[0].map(norm),ix={};
+  COLS.forEach(function(k){ix[k]=-1;for(var i=0;i<h.length;i++)if(ALIAS[k].indexOf(h[i])>-1){ix[k]=i;break}});
+  var out=[];
+  rows.slice(1).forEach(function(r,n){
+    var g=function(k){return ix[k]>-1?(r[ix[k]]||"").trim():""};
+    var url=safeUrl(g("url"));if(!url||!g("category"))return;
+    out.push({category:titleCase(g("category")),title:g("title")||"Untitled video",url:url,date:toISODate(g("date")),sets:g("sets"),reps:g("reps"),weight:g("weight"),notes:g("notes"),order:n});
+  });
+  return out;
+}
+
+/* data */
+function all(){
+  var seen={},out=[];
+  state.remote.concat(state.pending).forEach(function(v){var k=norm(v.category)+"|"+v.url;if(seen[k])return;seen[k]=1;out.push(v)});
+  return out;
+}
+function cats(){
+  var list=DEFAULT_CATS.slice(),seen={};list.forEach(function(c){seen[norm(c)]=1});
+  all().forEach(function(v){var k=norm(v.category);if(k&&!seen[k]){seen[k]=1;list.push(v.category)}});
+  return list;
+}
+function matchCat(n){var k=norm(n),l=cats();for(var i=0;i<l.length;i++)if(norm(l[i])===k)return l[i];return titleCase(n||"Other")}
+function sorted(){
+  var dir=state.sort==="new"?-1:1;
+  var l=all().filter(function(v){return norm(v.category)===norm(state.cat)});
+  l.forEach(function(v,i){v._i=v.order!=null?v.order:1e6+(v.stamp||i)});
+  l.sort(function(a,b){
+    var da=a.date||"",db=b.date||"";
+    if(da!==db){if(!da)return 1;if(!db)return -1;return(da<db?-1:1)*dir}
+    return(a._i-b._i)*dir;
+  });
+  return l;
+}
+
+/* render */
+function renderRail(){
+  var rail=$("rail");rail.textContent="";var l=cats();if(!state.cat)state.cat=l[0];
+  var vs=all();
+  l.forEach(function(c){
+    var n=vs.filter(function(v){return norm(v.category)===norm(c)}).length;
+    var b=el("button","tab",c);b.setAttribute("role","tab");b.setAttribute("aria-selected",String(c===state.cat));b.appendChild(el("em",null,n));
+    b.onclick=function(){state.cat=c;state.armed=null;render()};rail.appendChild(b);
+  });
+}
+function renderPlan(){
+  var p=PLAN[state.cat]||GENERIC,row=p.L[state.level],seg=$("levels");seg.textContent="";
+  LEVELS.forEach(function(n,i){var b=el("button",null,n);b.type="button";b.setAttribute("aria-pressed",String(i===state.level));b.onclick=function(){state.level=i;renderPlan()};seg.appendChild(b)});
+  $("plan-h").textContent=state.cat+" programming";
+  var s=$("stats");s.textContent="";
+  [["Sets",row[0]],["Reps",row[1]],["Rest",row[2]],["Load",row[3]]].forEach(function(x){var d=el("div","stat");d.appendChild(el("b",null,x[1]));d.appendChild(el("span",null,x[0]));s.appendChild(d)});
+  $("plan-note").textContent=p.n;
+}
+function chip(k,v){var c=el("span","chip");c.appendChild(el("span",null,k+" "));c.appendChild(el("b",null,v));return c}
+function makeTile(v){
+  var yt=ytInfo(v.url);
+  if(yt){
+    var b=el("div","tile"+(yt.short?" short":""));b.style.cursor="default";
+    var f=document.createElement("iframe");
+    f.src="https://www.youtube-nocookie.com/embed/"+yt.id+"?rel=0";
+    f.allow="encrypted-media; picture-in-picture; fullscreen";f.allowFullscreen=true;f.loading="lazy";f.title=v.title;
+    f.referrerPolicy="strict-origin-when-cross-origin";
+    b.appendChild(f);
+    return b;
+  }
+  var a=el("a","tile");a.href=v.url;a.target="_blank";a.rel="noopener noreferrer";a.setAttribute("aria-label","Open "+v.title);
+  a.insertAdjacentHTML("beforeend",PLAY);try{a.appendChild(el("small",null,new URL(v.url).hostname.replace(/^www\./,"")))}catch(e){}
+  return a;
+}
+function renderGrid(){
+  var g=$("grid");g.textContent="";$("list-h").textContent=state.cat+" videos";
+  var l=sorted();
+  if(!l.length){g.appendChild(el("div","empty","No "+state.cat.toLowerCase()+" videos yet. Use Add a video to save the first one."));return}
+  l.forEach(function(v){
+    var card=el("article","card");card.appendChild(makeTile(v));
+    var b=el("div","cbody");b.appendChild(el("h3","ctitle",v.title));
+    b.appendChild(el("div","meta",fmtDate(v.date)+(v.local?" · pending":"")));
+    if(v.sets||v.reps||v.weight){var cs=el("div","chips");if(v.sets)cs.appendChild(chip("Sets",v.sets));if(v.reps)cs.appendChild(chip("Reps",v.reps));if(v.weight)cs.appendChild(chip("Weight",v.weight));b.appendChild(cs)}
+    if(v.notes)b.appendChild(el("p","note",v.notes));
+    var f=el("div","cfoot");var a=el("a",null,"Open link");a.href=v.url;a.target="_blank";a.rel="noopener noreferrer";f.appendChild(a);
+    var key=norm(v.category)+"|"+v.url,armed=state.armed===key;
+    var d=el("button","link"+(armed?" danger":""),armed?"Confirm remove":"Remove");d.type="button";
+    d.onclick=function(){if(!armed){state.armed=key;renderGrid();return}state.armed=null;removeVideo(v)};
+    f.appendChild(d);b.appendChild(f);card.appendChild(b);g.appendChild(card);
+  });
+}
+function fillCatSelect(){var s=$("f-cat"),keep=s.value;s.textContent="";cats().forEach(function(c){var o=el("option",null,c);o.value=c;s.appendChild(o)});s.value=keep&&cats().indexOf(keep)>-1?keep:state.cat}
+function renderForm(){
+  var tok=!!store("ghToken");
+  $("tokenInfo").textContent=tok?"A token is saved. New videos are added to videos.csv in the repo and appear for everyone.":"No token saved. New videos are kept on this device only until you add them to videos.csv.";
+  var n=state.pending.length;
+  $("pendingInfo").textContent=n?n+" video"+(n===1?"":"s")+" saved only on this device.":"Nothing pending.";
+}
+function render(){renderRail();renderPlan();renderGrid();fillCatSelect();renderForm()}
+function setStatus(id,msg,cls){var s=$(id);s.textContent=msg;s.className="status "+(cls||"")}
+
+/* GitHub */
+var API="https://api.github.com/repos/"+REPO.owner+"/"+REPO.name+"/contents/"+REPO.path;
+function ghHeaders(){return{"Accept":"application/vnd.github+json","Authorization":"Bearer "+store("ghToken"),"X-GitHub-Api-Version":"2022-11-28"}}
+function b64dec(s){var bin=atob(s.replace(/\s/g,"")),b=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)b[i]=bin.charCodeAt(i);return new TextDecoder().decode(b)}
+function b64enc(s){var b=new TextEncoder().encode(s),bin="";for(var i=0;i<b.length;i++)bin+=String.fromCharCode(b[i]);return btoa(bin)}
+function ghRead(){
+  return fetch(API+"?ref="+encodeURIComponent(REPO.branch),{headers:ghHeaders()}).then(function(r){
+    if(r.status===404)return{text:COLS.join(",")+"\n",sha:null};
+    if(!r.ok)throw new Error("GitHub returned "+r.status);
+    return r.json().then(function(j){return{text:b64dec(j.content),sha:j.sha}});
+  });
+}
+function ghWrite(text,sha,msg){
+  var body={message:msg,content:b64enc(text),branch:REPO.branch};if(sha)body.sha=sha;
+  return fetch(API,{method:"PUT",headers:Object.assign({"Content-Type":"application/json"},ghHeaders()),body:JSON.stringify(body)}).then(function(r){
+    if(!r.ok)throw new Error(r.status===401||r.status===403||r.status===404?"The token was rejected. Check that it can write contents to the repo.":"GitHub returned "+r.status);
+  });
+}
+function appendRemote(v){
+  return ghRead().then(function(f){
+    var t=f.text;if(t&&!/\n$/.test(t))t+="\n";
+    return ghWrite(t+rowCSV(v)+"\n",f.sha,"Add video: "+v.title.slice(0,60));
+  });
+}
+function removeRemote(v){
+  return ghRead().then(function(f){
+    var rows=parseCSV(f.text),head=rows[0]||COLS,done=false;
+    var ui=head.map(norm).findIndex(function(h){return ALIAS.url.indexOf(h)>-1}),ci=head.map(norm).findIndex(function(h){return ALIAS.category.indexOf(h)>-1});
+    var keep=rows.filter(function(r,i){if(i===0||done)return true;if(safeUrl(r[ui])===v.url&&norm(r[ci])===norm(v.category)){done=true;return false}return true});
+    var out=keep.map(function(r){return r.map(cell).join(",")}).join("\n")+"\n";
+    return ghWrite(out,f.sha,"Remove video: "+v.title.slice(0,60));
+  });
+}
+function savePending(){store("pendingVideos",JSON.stringify(state.pending))}
+function removeVideo(v){
+  var isPending=state.pending.some(function(p){return p===v});
+  if(isPending){state.pending=state.pending.filter(function(p){return p!==v});savePending();render();return}
+  if(!store("ghToken")){setStatus("formStatus","Add a GitHub token under Publishing to remove videos from the repo.","bad");openForm();return}
+  removeRemote(v).then(function(){state.remote=state.remote.filter(function(r){return r!==v});render()})
+    .catch(function(e){setStatus("formStatus",e.message,"bad");openForm()});
+}
+
+/* events */
+function openForm(){
+  var w=$("formWrap");if(!w.open){if(w.showModal)w.showModal();else w.setAttribute("open","")}
+  $("f-cat").value=state.cat;if(!$("f-date").value)$("f-date").value=today();$("f-title").focus();
+}
+function closeForm(){var w=$("formWrap");if(w.close)w.close();else w.removeAttribute("open")}
+$("toggleForm").onclick=openForm;
+$("cancelBtn").onclick=closeForm;
+$("formWrap").addEventListener("click",function(e){if(e.target===$("formWrap"))closeForm()});
+$("sort").onchange=function(){state.sort=$("sort").value;renderGrid()};
+$("vform").addEventListener("submit",function(e){
+  e.preventDefault();
+  var title=$("f-title").value.trim(),url=safeUrl($("f-url").value);
+  if(!title){setStatus("formStatus","Add a title.","bad");$("f-title").focus();return}
+  if(!url){setStatus("formStatus","Enter a full video link starting with http or https.","bad");$("f-url").focus();return}
+  var v={category:matchCat($("f-cat").value),title:title,url:url,date:toISODate($("f-date").value)||today(),sets:$("f-sets").value.trim(),reps:$("f-reps").value.trim(),weight:$("f-weight").value.trim(),notes:$("f-notes").value.trim()};
+  var clear=function(){["f-title","f-url","f-sets","f-reps","f-weight","f-notes"].forEach(function(i){$(i).value=""});$("f-date").value=today();state.cat=v.category;render()};
+  $("submitBtn").disabled=true;
+  if(store("ghToken")){
+    setStatus("formStatus","Saving to GitHub...");
+    appendRemote(v).then(function(){v.order=1e5+state.remote.length;state.remote.push(v);clear();setStatus("formStatus","Saved to "+v.category+". The site updates for everyone in about a minute.","ok")})
+      .catch(function(err){setStatus("formStatus",err.message+" Saved on this device instead.","bad");v.local=true;v.stamp=Date.now();state.pending.push(v);savePending();clear()})
+      .then(function(){$("submitBtn").disabled=false});
+  }else{
+    v.local=true;v.stamp=Date.now();state.pending.push(v);savePending();clear();
+    setStatus("formStatus","Saved on this device. Add a token under Publishing to save to the repo.","ok");$("submitBtn").disabled=false;
+  }
+});
+$("tokenSave").onclick=function(){var t=$("token").value.trim();if(!t)return;store("ghToken",t);$("token").value="";setStatus("formStatus","Token saved on this device.","ok");renderForm()};
+$("tokenClear").onclick=function(){store("ghToken",null);setStatus("formStatus","Token removed.","ok");renderForm()};
+$("copyPending").onclick=function(){
+  var txt=state.pending.map(rowCSV).join("\n");if(!txt){setStatus("pendStatus","Nothing to copy.","bad");return}
+  var ok=function(){setStatus("pendStatus","Copied. Paste the rows at the end of videos.csv.","ok")};
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(ok,function(){setStatus("pendStatus","Copy was blocked by the browser.","bad")});
+  else setStatus("pendStatus","Copy is not supported here.","bad");
+};
+$("clearPending").onclick=function(){state.pending=[];savePending();render();setStatus("pendStatus","Cleared.","ok")};
+
+/* boot */
+try{var p=JSON.parse(store("pendingVideos")||"[]");if(Array.isArray(p))state.pending=p.filter(function(v){return v&&safeUrl(v.url)&&v.category&&v.title}).map(function(v){v.local=true;return v})}catch(e){}
+render();
+var load=store("ghToken")?ghRead().then(function(f){return f.text}):fetch(REPO.path,{cache:"no-cache"}).then(function(r){if(!r.ok)throw new Error("Could not load videos.csv ("+r.status+").");return r.text()});
+load.then(function(t){state.remote=toVideos(t);
+  var keys={};state.remote.forEach(function(v){keys[norm(v.category)+"|"+v.url]=1});
+  state.pending=state.pending.filter(function(v){return!keys[norm(v.category)+"|"+v.url]});savePending();render()})
+.catch(function(e){var b=$("loadErr");b.hidden=false;b.textContent=e.message+" If you opened this file directly from disk, host it with GitHub Pages or a local web server."});
+})();
+</script>
+</body>
+</html>
